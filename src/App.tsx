@@ -1,10 +1,11 @@
 import axios from 'axios'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 import './App.css'
 import { api } from './lib/api'
 
-import { GeniusResponse, Result } from './lib/type'
+import { GeniusResponse, Result } from './types/Genius'
 import * as cheerio from 'cheerio'
+import { getAccessToken, getCurrentlyTrack } from './lib/spotify'
 
 type SongInfo = {
   lyric: string
@@ -17,7 +18,7 @@ type FormState = {
   artist: string
 }
 
-const formState = {
+const formState: FormState = {
   title: '',
   artist: '',
 }
@@ -28,19 +29,46 @@ const songState: SongInfo = {
   description: '',
 }
 
+const playingState = {
+  name: '',
+  artist: '',
+  image: '',
+  isPlaying: false,
+}
+
 function App() {
   const [form, setForm] = useState(formState)
   const [song, setSong] = useState(songState)
+  const [playing, setPlaying] = useState(playingState)
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, title: e.target.value })
   }
-
   const handleArtistChange = (e: ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, artist: e.target.value })
   }
 
-  function run(title: string, artist: string): Promise<SongInfo> {
-    const songTitle = `${title} ${artist}`
+  useEffect(() => {
+    async function spotifyRun() {
+      const data = await getAccessToken()
+      const playingData = await Promise.resolve(
+        getCurrentlyTrack(data.access_token)
+      )
+      playingData.is_playing &&
+        setPlaying({
+          name: playingData.item.name || '',
+          artist: playingData.item.artists[0].name || '',
+          image: playingData.item.album.images[2].url || '',
+          isPlaying: playingData.is_playing,
+        })
+      playingData.is_playing &&
+        geniusRun(playingData.item.name, playingData.item.artists[0].name)
+    }
+    spotifyRun()
+  }, [])
+
+  function geniusRun(title: string, artist: string): Promise<SongInfo> {
+    const modTitle = title.replace(/\s-.*/g, '')
+    const songTitle = `${modTitle} ${artist}`
       .toLowerCase()
       .replace(/ *\([^)]*\) */g, '')
       .replace(/ *\[[^\]]*]/, '')
@@ -97,8 +125,7 @@ function App() {
               }
             )
           }
-
-          console.log(description)
+          // console.log(description)
           const lyric = lyrics.trim()
           return { lyric, song, description }
         })
@@ -109,58 +136,71 @@ function App() {
             description: songInfo.description,
           })
         })
-        .then(() => setForm({ title: '', artist: '' }))
+        .then(() => {
+          setForm({ title: '', artist: '' })
+        })
         .catch((e) => window.alert('Can not find the song.'))
     })
   }
 
   const handleClick = async () => {
-    await run(form.title, form.artist)
-      .then(() => {
-        console.log('success')
-      })
-      .catch((e) => console.log(e))
+    await geniusRun(form.title, form.artist)
   }
-
-  // run('Blinding Lights', 'The Weeknd')
 
   return (
     <div className="App">
       <h1>Genius API</h1>
-      <div className="card">
-        <input
-          type="text"
-          placeholder="artist"
-          name="title"
-          value={form.artist}
-          onChange={handleArtistChange}
-        />
-        <input
-          type="text"
-          placeholder="title"
-          name="artist"
-          value={form.title}
-          onChange={handleTitleChange}
-        />
-        <button onClick={() => handleClick()}>search</button>
-        {song !== null && (
-          <p>Please type a song title which you want to search.</p>
-        )}
-        {song.song[0] !== undefined && (
-          <p className="song">
-            {song.song[0]?.title} / {song.song[0]?.artist_names}
-          </p>
-        )}
-        {/* {song.lyric !== undefined && <p className="title">Lyrics</p>} */}
-        {song.lyric !== '' && (
-          <>
-            <p className="title">Lyrics</p>
-            <p className="content">{song.lyric}</p>
-          </>
-        )}
-        {song.description !== '' && <p className="title">Description</p>}
-        {song !== undefined && <p className="content">{song.description}</p>}
-      </div>
+      {playing.isPlaying ? (
+        <div className="card">
+          <p>{playing.artist}</p>
+          <img src={playing.image} alt="" />
+          <p>{playing.name}</p>
+          {song.lyric !== '' && (
+            <>
+              <p className="title">Lyrics</p>
+              <p className="content">{song.lyric}</p>
+            </>
+          )}
+          {song.description !== '' && <p className="title">Description</p>}
+          {song !== undefined && <p className="content">{song.description}</p>}
+        </div>
+      ) : (
+        <div className="card">
+          <input
+            type="text"
+            placeholder="artist"
+            name="title"
+            value={form.artist}
+            onChange={handleArtistChange}
+          />
+          <input
+            type="text"
+            placeholder="title"
+            name="artist"
+            value={form.title}
+            onChange={handleTitleChange}
+          />
+          <button onClick={() => handleClick()}>search</button>
+          {song !== null && (
+            <p>Please type a song title which you want to search.</p>
+          )}
+          {song.song[0] !== undefined && (
+            <p className="song">
+              {song.song[0]?.title} / {song.song[0]?.artist_names}
+            </p>
+          )}
+          {/* {song.lyric !== undefined && <p className="title">Lyrics</p>} */}
+          {song.lyric !== '' && (
+            <>
+              <p className="title">Lyrics</p>
+              <p className="content">{song.lyric}</p>
+            </>
+          )}
+          {song.description !== '' && <p className="title">Description</p>}
+          {song !== undefined && <p className="content">{song.description}</p>}
+        </div>
+      )}
+
       <p className="read-the-docs">Genius API is genius.</p>
     </div>
   )
