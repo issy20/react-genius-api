@@ -1,7 +1,7 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { api, _api } from './api'
-import { GeniusResponse, Result } from './type'
+import { GeniusResponse, Result } from '../types/Genius'
 
 // export function extractLyrics(url: string) {
 //   // const res = await fetch(url)

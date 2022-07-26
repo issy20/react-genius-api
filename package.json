@@ -8,10 +8,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
     "axios": "^0.27.2",
+    "buffer": "^6.0.3",
     "cheerio": "^1.0.0-rc.12",
+    "events": "^3.3.0",
+    "process": "^0.11.10",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "util": "^0.12.4"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.31",
