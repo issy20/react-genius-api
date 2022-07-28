@@ -1,8 +1,7 @@
 import axios from 'axios'
-
-import { SpotifyAuthApiResponse } from '../types/Auth'
-import { CurrentPlayingTrackType } from '../types/PlayingTrack'
-import { RecentlyPlayedTrackType } from '../types/PlayedTrack'
+import { SpotifyAuthApiResponse } from '~/types/Auth'
+import { CurrentPlayingTrackType } from '~/types/PlayingTrack'
+import { RecentlyPlayedTrackType } from '~/types/PlayedTrack'
 
 export async function getAccessToken(): Promise<SpotifyAuthApiResponse> {
   const params = new URLSearchParams()
