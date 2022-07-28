@@ -1,11 +1,10 @@
 import axios from 'axios'
 import { ChangeEvent, useEffect, useState } from 'react'
-import './App.css'
-import { api } from './lib/api'
-
-import { GeniusResponse, Result } from './types/Genius'
+import '~/App.css'
+import { api } from '~/lib/api'
 import * as cheerio from 'cheerio'
-import { getAccessToken, getCurrentlyTrack } from './lib/spotify'
+import { getAccessToken, getCurrentlyTrack } from '~/lib/spotify'
+import { GeniusResponse, Result } from '~/types/Genius'
 
 type SongInfo = {
   lyric: string
@@ -189,7 +188,6 @@ function App() {
               {song.song[0]?.title} / {song.song[0]?.artist_names}
             </p>
           )}
-          {/* {song.lyric !== undefined && <p className="title">Lyrics</p>} */}
           {song.lyric !== '' && (
             <>
               <p className="title">Lyrics</p>

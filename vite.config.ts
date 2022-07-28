@@ -36,6 +36,7 @@ export default defineConfig({
       stream: 'stream-browserify',
       zlib: 'browserify-zlib',
       util: 'util',
+      '~/': `${__dirname}/src/`,
     },
   },
 })
